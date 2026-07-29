@@ -216,3 +216,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# -----------------------------
+# Dataset (do not upload)
+# -----------------------------
+dataset/
+dataset_old/
+dataset_split/
+
+# Dataset ZIP files
+*.zip
+
+# YOLO training results
+runs/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

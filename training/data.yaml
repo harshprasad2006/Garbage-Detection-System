@@ -1,0 +1,25 @@
+# dataset.yaml
+# Garbage Detection Dataset - leakage-safe 70/20/10 split
+# path is the ONE thing you change when moving between local machine and Colab.
+# All other paths are relative to it.
+ 
+path: dataset   # local: relative to repo root | Colab: we'll override this to the Drive path in Phase 4
+ 
+train: train/images
+val: valid/images
+test: test/images
+ 
+nc: 10
+ 
+names:
+  0: battery
+  1: biological
+  2: cardboard
+  3: clothing
+  4: glass
+  5: metal
+  6: paper
+  7: plastic
+  8: shoes
+  9: trash
+ 

@@ -10,16 +10,16 @@ This project aims to develop an AI-powered Garbage Detection System capable of d
 
 The dataset used for this project was downloaded from Roboflow Universe.
 
-Dataset Name:
+**Dataset Name:**
 Garbage Detection (Version 7)
 
-Total Images:
+**Total Images:**
 5338
 
-Number of Classes:
+**Number of Classes:**
 10
 
-Classes:
+**Classes:**
 
 - Battery
 - Biological
@@ -32,146 +32,167 @@ Classes:
 - Shoes
 - Trash
 
-The dataset already contained object annotations in YOLO format, making it suitable for direct training using Ultralytics YOLOv8.
+### Why this dataset was selected
+
+Two candidate datasets were considered for this project:
+
+- **TACO (Trash Annotations in Context)**
+- **Roboflow Garbage Detection Dataset**
+
+Although the TACO dataset contains realistic real-world litter images, it uses COCO-format annotations with approximately 60 fine-grained and highly imbalanced classes. Using TACO would require annotation conversion to YOLO format, additional preprocessing, and class regrouping before model training.
+
+The Roboflow Garbage Detection dataset was selected because it is already provided in YOLO format, contains high-quality object annotations, has a manageable dataset size suitable for training on the free Google Colab Tesla T4 GPU, and provides 10 practical material-based garbage categories. This allowed the project effort to focus on model training, evaluation, and deployment instead of dataset engineering.
 
 ---
 
 ## 3. Original Dataset Analysis
 
-The original dataset contained:
+The original Roboflow dataset contained:
 
-Training Images:
-4929
+| Dataset | Images |
+|---------|-------:|
+| Training | 4929 |
+| Validation | 203 |
+| Testing | 206 |
+| **Total** | **5338** |
 
-Validation Images:
-203
+Original distribution:
 
-Testing Images:
-206
+- Training: **92.3%**
+- Validation: **3.8%**
+- Testing: **3.9%**
 
-This corresponds approximately to:
-
-Training:
-92.3%
-
-Validation:
-3.8%
-
-Testing:
-3.9%
-
-Such an imbalanced split is not recommended because the validation and testing sets are too small to provide reliable model evaluation.
+This split was highly imbalanced because the validation and testing sets were too small to provide reliable evaluation metrics.
 
 ---
 
 ## 4. Dataset Preprocessing
 
-To improve evaluation quality, a custom preprocessing pipeline was created.
+To improve model evaluation, a custom preprocessing pipeline was developed.
 
-A Python script (`split_dataset.py`) was developed to:
+A Python script (`split_dataset.py`) was created to:
 
-- Read every image and label.
+- Read every image and its corresponding YOLO label.
 - Preserve image-label pairs.
-- Randomly shuffle using a fixed seed.
-- Create a new dataset split.
+- Shuffle the dataset using a fixed random seed.
+- Create a new balanced dataset split.
 
 Final dataset distribution:
 
-Training Images:
-3734 (70%)
+| Dataset | Images | Percentage |
+|---------|-------:|-----------:|
+| Training | 3734 | 70% |
+| Validation | 1068 | 20% |
+| Testing | 536 | 10% |
+| **Total** | **5338** | **100%** |
 
-Validation Images:
-1068 (20%)
-
-Testing Images:
-536 (10%)
-
-This follows the commonly recommended 70/20/10 split for object detection datasets.
+This follows the commonly recommended **70/20/10** split for object detection tasks.
 
 ---
 
 ## 5. Data Leakage Prevention
 
-A custom dataset splitting strategy was used to avoid data leakage.
+The Roboflow export included pre-applied augmentation (such as flips, rotations, crops, color changes, blur, and noise). Images generated from the same original photograph share a common filename prefix before the `.rf.<hash>` portion of the filename.
 
-The script ensured:
+For example:
 
-- Images were assigned to only one subset.
-- Labels remained paired with their corresponding images.
-- The same image never appeared in multiple subsets.
+```
+battery_7_jpg.rf.123abc.jpg
+battery_7_jpg.rf.456def.jpg
+battery_7_jpg.rf.789ghi.jpg
+```
 
-This produces a more reliable evaluation of model performance.
+Although these files are different images, they all originate from the same source photograph.
+
+If the dataset were randomly split image-by-image, different augmented versions of the same original image could appear in both the training and testing sets. This is known as **data leakage**, because the model would effectively see almost identical images during training and evaluation, resulting in artificially inflated performance metrics.
+
+To prevent this issue, the custom `split_dataset.py` script performed the following steps:
+
+1. Grouped all images using the original source-image filename prefix.
+2. Shuffled groups (instead of individual images) using a fixed random seed (`42`) for reproducibility.
+3. Split the groups into **70% training**, **20% validation**, and **10% testing**.
+
+This guarantees that every augmented version of a source image remains in the same subset, ensuring no source image or its augmented variants appear across multiple subsets.
 
 ---
 
 ## 6. Annotation Format
 
-The dataset uses the YOLO annotation format.
+The dataset uses the standard YOLO object detection annotation format.
 
-Each image has a corresponding text file.
+Each image has one corresponding text file containing object annotations.
 
-Each annotation follows:
+Each annotation follows the format:
 
+```
 <class_id> <x_center> <y_center> <width> <height>
+```
 
-where all coordinates are normalized between 0 and 1.
+where:
+
+- **class_id** represents the garbage category.
+- **x_center** and **y_center** represent the center coordinates of the bounding box.
+- **width** and **height** represent the bounding box dimensions.
+
+All coordinate values are normalized between **0** and **1**, making the annotations independent of image resolution.
 
 ---
 
 ## 7. Training Configuration
 
-Model:
-YOLOv8s
+| Parameter | Value |
+|-----------|-------|
+| Model | YOLOv8s |
+| Transfer Learning | Enabled |
+| Image Size | 640 × 640 |
+| Epochs | 50 |
+| Batch Size | 16 |
+| Early Stopping Patience | 15 |
+| Optimizer | Default Ultralytics Optimizer |
+| Hardware | Google Colab Tesla T4 GPU |
 
-Image Size:
-640 × 640
-
-Epochs:
-50
-
-Batch Size:
-16
-
-Transfer Learning:
-Enabled
-
-Hardware:
-Google Colab Tesla T4 GPU
+The model was initialized using pretrained COCO weights (`yolov8s.pt`) and fine-tuned on the custom garbage detection dataset.
 
 ---
 
 ## 8. Data Augmentation
 
-The following augmentations were applied during training:
+The following augmentations were explicitly configured during training:
 
-- Horizontal Flip
-- Mosaic Augmentation
-- Brightness Variation
-- Saturation Variation
-- Scale Jitter
+| Augmentation | Parameter | Value | Purpose |
+|--------------|-----------|------:|---------|
+| Horizontal Flip | `fliplr` | 0.5 | 50% probability of horizontal flipping to improve viewpoint diversity |
+| Vertical Flip | `flipud` | 0.0 | Disabled because garbage objects have realistic upright orientations |
+| Mosaic | `mosaic` | 1.0 | Combines four images into one training sample, improving small-object detection |
+| Brightness Variation | `hsv_v` | 0.4 | Random brightness variation up to ±40% |
+| Saturation Variation | `hsv_s` | 0.7 | Random saturation variation up to ±70% |
+| Scale Jitter | `scale` | 0.5 | Random zoom in/out up to 50% for scale invariance |
 
-These augmentations improve model robustness and generalization.
+In addition to the configured augmentations, Ultralytics automatically applies several robustness augmentations (such as Blur, Median Blur, CLAHE, and Grayscale conversion) through the Albumentations library whenever appropriate.
 
 ---
 
 ## 9. Model Evaluation
 
-(To be completed after training finishes.)
+**(To be completed after training finishes.)**
 
-This section will include:
+The following evaluation metrics will be reported:
 
 - Precision
 - Recall
 - mAP@50
-- mAP@50-95
+- mAP@50–95
 - Confusion Matrix
-- Precision-Recall Curve
-- F1 Curve
+- Precision–Recall Curve
+- F1 Score Curve
+- Validation Prediction Samples
+
+These metrics will be generated automatically by the Ultralytics training pipeline.
 
 ---
 
 ## 10. Conclusion
 
-(To be completed after training finishes.)
+**(To be completed after training finishes.)**
 
-This section will summarize the overall model performance and discuss possible future improvements.
+This section will summarize the final model performance, discuss strengths and limitations of the trained detector, and suggest future improvements such as increasing dataset diversity, experimenting with larger YOLO models, hyperparameter tuning, and deployment as a real-time web application.

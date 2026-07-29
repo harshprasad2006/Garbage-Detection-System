@@ -174,25 +174,75 @@ In addition to the configured augmentations, Ultralytics automatically applies s
 
 ## 9. Model Evaluation
 
-**(To be completed after training finishes.)**
+Training completed in 1.195 hours on a Tesla T4 GPU. Final validation
+metrics (on the 1068-image validation set, 2023 total annotated instances):
 
-The following evaluation metrics will be reported:
+### Overall Metrics
 
-- Precision
-- Recall
-- mAP@50
-- mAP@50–95
-- Confusion Matrix
-- Precision–Recall Curve
-- F1 Score Curve
-- Validation Prediction Samples
+| Metric | Value |
+|---|---|
+| Precision | 0.806 |
+| Recall | 0.703 |
+| mAP@50 | 0.787 |
+| mAP@50-95 | 0.650 |
 
-These metrics will be generated automatically by the Ultralytics training pipeline.
+### Per-Class Performance
+
+| Class | Precision | Recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|
+| battery | 0.849 | 0.671 | 0.802 | 0.693 |
+| biological | 0.700 | 0.544 | 0.662 | 0.468 |
+| cardboard | 0.902 | 0.593 | 0.788 | 0.653 |
+| clothing | 0.917 | 0.926 | 0.965 | 0.835 |
+| glass | 0.806 | 0.765 | 0.792 | 0.652 |
+| metal | 0.747 | 0.830 | 0.864 | 0.778 |
+| paper | 0.732 | 0.549 | 0.661 | 0.436 |
+| plastic | 0.773 | 0.718 | 0.771 | 0.708 |
+| shoes | 0.852 | 0.852 | 0.926 | 0.769 |
+| trash | 0.779 | 0.583 | 0.642 | 0.508 |
+
+Supporting artifacts (`results.png`, `confusion_matrix.png`,
+`confusion_matrix_normalized.png`, `PR_curve.png`, `F1_curve.png`, and
+validation prediction samples) are stored in `training/results/`.
+
+### Observations
+
+- **Strongest classes**: `clothing` (mAP50 = 0.965) and `shoes` (mAP50 =
+  0.926) achieved the best results, likely due to consistent shape and
+  visual distinctiveness relative to other classes.
+- **Weakest classes**: `biological`, `trash`, and `paper` show the lowest
+  recall (0.54-0.58), meaning the model misses a meaningful fraction of
+  these objects. This is consistent with the inherent visual ambiguity of
+  these categories — "trash" is a broad catch-all with high visual
+  variance, and "paper"/"biological" waste can visually overlap with other
+  classes or blend into backgrounds.
+- Precision remains reasonably high across all classes (0.70-0.92),
+  indicating the model rarely produces confident false positives; its main
+  weakness is under-detection (missed objects) rather than misclassification.
 
 ---
 
 ## 10. Conclusion
 
-**(To be completed after training finishes.)**
+The fine-tuned YOLOv8s model achieved an overall mAP@50 of 0.787 and
+mAP@50-95 of 0.650 after 50 epochs of training on a leakage-safe,
+70/20/10 split of the Roboflow Garbage Detection dataset. Precision (0.806)
+indicates reliable detections with few false positives, while recall (0.703)
+shows room for improvement, particularly for visually ambiguous classes
+such as biological waste, paper, and general trash.
 
+**Possible future improvements:**
+- Collecting additional training images for the weaker classes
+  (biological, trash, paper) to address class imbalance and visual
+  ambiguity.
+- Training for more epochs (80-100) with a learning-rate schedule tuned
+  specifically for the weaker classes.
+- Applying class-weighted loss to give under-performing classes more
+  weight during training.
+- Experimenting with a larger backbone (YOLOv8m) if additional GPU budget
+  is available, trading inference speed for potential accuracy gains.
+
+Overall, the model meets the project's functional requirements and is
+suitable for integration into the full detection pipeline (API, UI, and
+deployment).
 This section will summarize the final model performance, discuss strengths and limitations of the trained detector, and suggest future improvements such as increasing dataset diversity, experimenting with larger YOLO models, hyperparameter tuning, and deployment as a real-time web application.

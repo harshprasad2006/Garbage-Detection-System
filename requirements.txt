@@ -1,20 +1,13 @@
-# ==========================================
-# Garbage Detection System - requirements.txt
-# ==========================================
- 
-# ---- Core Model / Training (confirmed working in Colab) ----
-ultralytics==8.4.110      # YOLOv8 framework - matches version used in Colab training (pin ensures reproducibility)
-opencv-python==4.10.0.84  # Image/video/webcam frame handling for inference scripts (Phase 6)
- 
-# ---- Backend API (Phase 7 - to be finalized) ----
+ultralytics==8.4.110
+
+opencv-python-headless==4.10.0.84
+
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
-python-multipart==0.0.9   # required by FastAPI to accept uploaded image/video files
- 
-# ---- Frontend (Phase 8 - to be finalized) ----
+python-multipart==0.0.9
+
 streamlit>=1.46.0
- 
-# ---- Supporting libraries ----
-Pillow>=11.3.0           # image handling for backend/frontend
+
+Pillow==11.3.0
 numpy==1.26.4
-requests==2.32.3          # frontend -> backend API calls
+requests==2.32.3

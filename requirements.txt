@@ -12,9 +12,9 @@ uvicorn[standard]==0.30.6
 python-multipart==0.0.9   # required by FastAPI to accept uploaded image/video files
  
 # ---- Frontend (Phase 8 - to be finalized) ----
-streamlit==1.38.0
+streamlit>=1.46.0
  
 # ---- Supporting libraries ----
-pillow==10.4.0            # image handling for backend/frontend
+Pillow>=11.3.0           # image handling for backend/frontend
 numpy==1.26.4
 requests==2.32.3          # frontend -> backend API calls

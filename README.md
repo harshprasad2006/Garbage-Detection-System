@@ -1,4 +1,17 @@
+---
+title: Garbage Detection System
+emoji: 🗑️
+colorFrom: yellow
+colorTo: green
+sdk: streamlit
+sdk_version: "1.38.0"
+app_file: frontend/app.py
+pinned: false
+---
+
 # 🗑️ Garbage Detection System
+
+...# 🗑️ Garbage Detection System
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/Model-YOLOv8s-brightgreen)](https://github.com/ultralytics/ultralytics)

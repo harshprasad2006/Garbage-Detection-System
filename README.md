@@ -3,138 +3,88 @@ title: Garbage Detection System
 emoji: 🗑️
 colorFrom: yellow
 colorTo: green
-sdk: streamlit
-sdk_version: "1.38.0"
-app_file: frontend/app.py
+sdk: docker
 pinned: false
 ---
 
 # 🗑️ Garbage Detection System
 
-...# 🗑️ Garbage Detection System
-
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/Model-YOLOv8s-brightgreen)](https://github.com/ultralytics/ultralytics)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B)](https://streamlit.io/)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
 
-An end-to-end deep learning application that detects and classifies garbage in **images**, **uploaded videos**, and **live webcam feeds** using a fine-tuned **YOLOv8s** object detection model.
-
-The project includes:
-
-- YOLOv8s object detection model
-- FastAPI backend
-- Streamlit frontend
-- Google Colab training pipeline
-- Public deployment using Hugging Face Spaces
+An end-to-end deep learning application that detects and classifies garbage
+in **images**, **uploaded videos**, and **live webcam captures**, using a
+fine-tuned YOLOv8s object detection model. Includes a FastAPI backend, a
+custom-themed Streamlit frontend, and a public live deployment.
 
 ---
 
-# ✨ Features
+## 🚀 Live Demo
 
-- Detect garbage in uploaded images
-- Detect garbage in uploaded videos
-- Real-time webcam garbage detection
-- Fine-tuned YOLOv8s object detection model
-- Leakage-safe dataset preprocessing
-- FastAPI REST API
-- Streamlit web interface
-- Google Colab training pipeline
-- Hugging Face Spaces deployment
+**[Try it live →](https://garbage-detection-system-levvdwgyxwf2wfepzuc7rb.streamlit.app/)**
 
----
-
-# 🚧 Project Status
-
-This project is currently under active development.
-
-### ✅ Completed
-
-- Dataset selection
-- Leakage-safe dataset preprocessing
-- Custom dataset splitting (70/20/10)
-- YOLOv8 training pipeline
-- Google Colab training setup
-- Training documentation
-
-### 🔄 In Progress
-
-- Model training
-- Model evaluation
-
-### ⏳ Remaining
-
-- FastAPI backend
-- Streamlit frontend
-- Hugging Face deployment
-- Final project testing
+Deployed on Streamlit Community Cloud. (Note: Hugging Face Spaces recently
+moved compute-based SDKs — Gradio and Docker — behind a paid plan for new
+accounts, with only static, non-compute Spaces remaining free. Since this
+project requires a running Python backend, Streamlit Community Cloud was
+used instead to provide a genuinely free, permanent, public deployment. A
+`Dockerfile` is still included in this repo for Hugging Face Spaces
+Docker-SDK deployment, should that path become available again.)
 
 ---
 
-# 🚀 Live Demo
+## 🧠 Model Overview
 
-> *(Hugging Face Spaces deployment link will be added after Phase 9.)*
+| | |
+|---|---|
+| **Architecture** | YOLOv8s (fine-tuned, not pretrained inference) |
+| **Classes (10)** | battery, biological, cardboard, clothing, glass, metal, paper, plastic, shoes, trash |
+| **Training hardware** | Google Colab (Tesla T4 GPU, free tier) |
+| **Epochs** | 50 |
+| **Image size** | 640 × 640 |
+| **Dataset** | [Roboflow Garbage Detection (v7)](https://universe.roboflow.com/idk-expry/garbage-detection-4fx3k/dataset/7) — 5,338 images |
+| **Split** | 70% train / 20% valid / 10% test (leakage-safe, grouped by source image) |
 
----
-
-# 📸 Demo Screenshots
-
-> *(Frontend screenshots, prediction examples and UI images will be added after Phase 8.)*
-
----
-
-# 🧠 Model Overview
-
-| Property | Value |
-|-----------|-------|
-| Model | YOLOv8s |
-| Training Method | Transfer Learning (Fine-tuning) |
-| Number of Classes | 10 |
-| Classes | battery, biological, cardboard, clothing, glass, metal, paper, plastic, shoes, trash |
-| Dataset | Roboflow Garbage Detection Dataset (Version 7) |
-| Total Images | 5,338 |
-| Dataset Split | 70% Train / 20% Validation / 10% Test |
-| Training Hardware | Google Colab (Tesla T4 GPU) |
-| Image Size | 640 × 640 |
-| Epochs | 50 |
-
-The complete methodology, preprocessing pipeline, augmentation strategy and evaluation details are available in **training_report.md**.
+Full methodology, augmentation configuration, and evaluation metrics are in
+[`training_report.md`](training_report.md).
 
 ---
 
-# 📊 Results
+## 📊 Results
 
-> *(Will be updated after training completes.)*
+| Metric | Value |
+|---|---|
+| Precision | 0.806 |
+| Recall | 0.703 |
+| mAP@50 | 0.787 |
+| mAP@50-95 | 0.650 |
 
-The following evaluation metrics will be included:
+**Strongest classes:** clothing (mAP50 = 0.965), shoes (mAP50 = 0.926)
+**Weakest classes:** biological, trash, paper (recall 0.54–0.58, due to
+visual ambiguity and class imbalance)
 
-- mAP@50
-- mAP@50-95
-- Precision
-- Recall
-- Per-class Accuracy
-- Confusion Matrix
-- Precision-Recall Curve
-- F1 Curve
-- Validation Predictions
+Full per-class breakdown, confusion matrix, PR curve, and F1 curve are in
+[`training_report.md`](training_report.md) and `training/results/`.
 
 ---
 
-# 🏗️ Project Structure
+## 🏗️ Project Structure
 
-```text
+```
 Garbage-Detection-System/
-│
-├── backend/                  # FastAPI backend
-├── frontend/                 # Streamlit frontend
-├── models/                   # Trained YOLO model (best.pt)
-├── notebooks/                # Google Colab notebook
-├── screenshots/              # README screenshots
-├── training/
-│   ├── data.yaml
-│   └── split_dataset.py
-│
-├── .gitignore
+├── dataset/            # train/valid/test images + YOLO labels (leakage-safe split)
+├── dataset_old/        # original Roboflow export (kept for reference)
+├── notebooks/          # Colab training notebook
+├── models/             # trained best.pt weights
+├── backend/            # detector.py (shared core), FastAPI app.py (/predict), inference scripts
+├── frontend/           # Streamlit UI (image/video/webcam/history tabs)
+├── training/           # data.yaml, split_dataset.py, results/ (plots, curves)
+├── screenshots/        # UI + result screenshots
+├── Dockerfile          # For Hugging Face Spaces / Docker-based deployment
+├── packages.txt        # System dependencies for Streamlit Community Cloud
 ├── README.md
 ├── requirements.txt
 └── training_report.md
@@ -142,209 +92,165 @@ Garbage-Detection-System/
 
 ---
 
-# ⚙️ Installation
-
-Clone the repository
+## ⚙️ Setup & Installation
 
 ```bash
 git clone https://github.com/harshprasad2006/Garbage-Detection-System.git
-
 cd Garbage-Detection-System
-```
 
-Create a virtual environment
-
-### Windows
-
-```bash
 python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
 
-venv\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-python3 -m venv venv
-
-source venv/bin/activate
-```
-
-Install all dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
 ---
 
-# ▶️ Running the Project
+## ▶️ Running Locally
 
-> *(Commands will be added after backend and frontend development.)*
-
-Backend
-
+**Backend (FastAPI):**
 ```bash
-Coming Soon...
+cd backend
+uvicorn app:app --reload --port 8000
 ```
+Interactive API docs available at `http://localhost:8000/docs`.
 
-Frontend
-
+**Frontend (Streamlit):**
 ```bash
-Coming Soon...
+cd frontend
+streamlit run app.py
+```
+Then open `http://localhost:8501` in your browser.
+
+**Standalone inference scripts** (image / video / webcam), useful for
+quick local testing without the API or UI:
+```bash
+cd backend
+python image_detector.py --image path/to/image.jpg
+python video_detector.py --video path/to/video.mp4
+python webcam_detector.py
 ```
 
 ---
 
-# 🔌 API Reference
+## 🔌 API Reference
 
-## POST /predict
+### `POST /predict`
 
-> *(Detailed API documentation will be added after Phase 7.)*
+Accepts an image file and returns detected garbage objects.
 
----
+**Request:** `multipart/form-data`
 
-# 🖼️ Dataset & Preprocessing
+| Field | Type | Description |
+|---|---|---|
+| `file` | image file | The image to run detection on (jpg/png) |
 
-The project uses the **Roboflow Garbage Detection Dataset (Version 7)** containing **5,338 annotated images** across **10 garbage categories**.
-
-The original dataset distribution supplied by Roboflow was:
-
-- Train : 4929 images
-- Validation : 203 images
-- Test : 206 images
-
-This distribution was unsuitable because it produced an approximate **92% / 4% / 4%** split.
-
-A custom Python script (`training/split_dataset.py`) was developed to generate a proper:
-
-- 70% Training
-- 20% Validation
-- 10% Testing
-
-split while preventing **data leakage** by grouping augmented images originating from the same source photograph.
-
-Complete preprocessing details are documented in **training_report.md**.
-
----
-
-# 🏋️ Model Training
-
-The model is trained using **Ultralytics YOLOv8s** with transfer learning.
-
-Training Environment
-
-- Google Colab
-- Tesla T4 GPU
-- Python 3.12
-- Ultralytics 8.4.110
-
-Training Configuration
-
-- Epochs : 50
-- Image Size : 640 × 640
-- Batch Size : 16
-- Early Stopping Patience : 15
-
-Configured Data Augmentations
-
-- Horizontal Flip
-- Mosaic Augmentation
-- Brightness Variation
-- Saturation / Contrast Variation
-- Scale Jitter
-
-The complete notebook will be available in:
-
-```
-notebooks/train_yolov8_garbage.ipynb
+**Response:** `200 OK`
+```json
+{
+  "detections": [
+    {
+      "class": "battery",
+      "confidence": 0.9518,
+      "bounding_box": {
+        "x1": 8.24,
+        "y1": 38.85,
+        "x2": 624.31,
+        "y2": 598.55
+      }
+    }
+  ]
+}
 ```
 
----
-
-# 🧪 Evaluation
-
-> *(Will be updated after training completes.)*
-
-Evaluation will include:
-
-- Validation Metrics
-- Loss Curves
-- PR Curve
-- F1 Curve
-- Confusion Matrix
-- Detection Samples
+### `GET /`
+Health check — confirms the API is running.
 
 ---
 
-# 📦 Deployment
+## 🖼️ Dataset & Preprocessing
 
-> *(Deployment instructions will be added after Hugging Face Spaces deployment.)*
+Two candidate sources were considered: **TACO** (Trash Annotations in
+Context) and **Roboflow's Garbage Detection dataset**. TACO offers
+realistic, real-world litter images but uses COCO-format annotations
+across 60 fine-grained, imbalanced classes, requiring conversion to YOLO
+format and additional class-grouping work. The Roboflow dataset was
+selected instead because it is natively in YOLO format, has a manageable
+size for training on a free Colab T4 GPU within reasonable time, and
+provides 10 practical material-based classes suited to a real-world
+garbage classification use case.
 
-Deployment Stack
+The original Roboflow export used a 92.3 / 3.8 / 3.9 train/valid/test
+split — too imbalanced for reliable evaluation, and contained augmented
+copies of the same source images (3 outputs per training example: flips,
+rotations, crops, color jitter). To prevent data leakage, a custom script
+(`training/split_dataset.py`) grouped images by source-image identity
+(filename prefix before `.rf.<hash>`) and split **groups** — not
+individual files — into a proper 70/20/10 ratio using a fixed random seed
+(42), guaranteeing no source image or its augmented variants appear in
+more than one subset.
 
-- FastAPI
-- Streamlit
-- Hugging Face Spaces
+Final split: 3,734 train / 1,068 valid / 536 test images (5,338 total).
 
----
-
-# 🛠️ Tech Stack
-
-| Category | Technology |
-|-----------|------------|
-| Programming Language | Python |
-| Deep Learning | YOLOv8 (Ultralytics) |
-| Computer Vision | OpenCV |
-| Backend | FastAPI |
-| Frontend | Streamlit |
-| Training Platform | Google Colab |
-| Deployment | Hugging Face Spaces |
-
----
-
-# 📚 Documentation
-
-Project documentation includes:
-
-- README.md
-- training_report.md
-- Google Colab Training Notebook
-- Source Code
+Full reasoning and annotation format details are in
+[`training_report.md`](training_report.md).
 
 ---
 
-# 🤝 Future Improvements
+## 🏋️ Training
 
-Possible future enhancements include:
+Training was performed in Google Colab using a free Tesla T4 GPU, fine-tuning
+YOLOv8s (pretrained on COCO) for 50 epochs at 640×640 resolution.
 
-- Mobile Application
-- Multi-language Interface
-- Garbage Segmentation
-- Waste Volume Estimation
-- Recycling Suggestions
-- Edge Deployment using TensorRT
-- Drone-based Garbage Detection
+**Augmentations explicitly configured** (not left as silent defaults):
 
----
+| Augmentation | Parameter | Value |
+|---|---|---|
+| Horizontal Flip | `fliplr` | 0.5 |
+| Mosaic | `mosaic` | 1.0 |
+| Brightness variation | `hsv_v` | 0.4 |
+| Contrast/Saturation variation | `hsv_s` | 0.7 |
+| Scale jitter | `scale` | 0.5 |
 
-# 👨‍💻 Author
-
-**Harsh Prasad**
-
-GitHub:
-https://github.com/harshprasad2006
+See [`notebooks/train_yolov8_garbage.ipynb`](notebooks/train_yolov8_garbage.ipynb)
+for the full training pipeline, and [`training_report.md`](training_report.md)
+for complete configuration details, results, and analysis.
 
 ---
 
-# ⭐ Acknowledgements
+## 🧪 Evaluation Metrics
 
-- Ultralytics YOLOv8
-- Roboflow Universe
-- Google Colab
-- FastAPI
-- Streamlit
+See [Results](#-results) above and [`training_report.md`](training_report.md)
+for full per-class metrics, confusion matrix, precision-recall curve, and
+F1 curve.
 
 ---
 
-**If you found this project useful, consider giving it a ⭐ on GitHub.**
+## 📦 Deployment
+
+The Streamlit frontend is deployed on **Streamlit Community Cloud**,
+connected directly to this GitHub repository (`main` branch,
+`frontend/app.py` as the entry point). `packages.txt` installs the system
+libraries OpenCV requires (`libgl1`, `libglib2.0-0`) in the cloud
+environment, and `requirements.txt` installs all Python dependencies.
+
+Live app: https://garbage-detection-system-levvdwgyxwf2wfepzuc7rb.streamlit.app/
+
+A `Dockerfile` is also included for Hugging Face Spaces (Docker SDK)
+deployment as an alternative path.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Model:** YOLOv8s (Ultralytics)
+- **Backend:** FastAPI
+- **Frontend:** Streamlit
+- **Training:** Google Colab (T4 GPU)
+- **Deployment:** Streamlit Community Cloud
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
